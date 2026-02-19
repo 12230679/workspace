@@ -1,0 +1,8 @@
+prefix=/home/hyobeen/catkin_ws/install
+
+Name: my_follower
+Description: Description of my_follower
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

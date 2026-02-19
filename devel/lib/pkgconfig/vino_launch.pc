@@ -1,0 +1,8 @@
+prefix=/home/hyobeen/catkin_ws/devel
+
+Name: vino_launch
+Description: Description of vino_launch
+Version: 0.9.0
+Cflags: 
+Libs: -L${prefix}/lib -lvino_launch
+Requires: roslaunch vino_core_lib vino_param_lib vino_sample nodelet

@@ -1,0 +1,8 @@
+prefix=/home/hyobeen/catkin_ws/install
+
+Name: vino_param_lib
+Description: Description of vino_param_lib
+Version: 0.9.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib -lvino_param_lib
+Requires: roscpp roslint

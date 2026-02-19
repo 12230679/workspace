@@ -1,0 +1,8 @@
+prefix=/home/hyobeen/catkin_ws/install
+
+Name: vino_sample
+Description: Description of vino_sample
+Version: 0.9.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib -lvino_sample
+Requires: roscpp object_msgs vino_param_lib vino_core_lib
