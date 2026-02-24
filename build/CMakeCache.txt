@@ -1219,6 +1219,9 @@ tf2_ros_DIR:PATH=/opt/ros/noetic/share/tf2_ros/cmake
 //The directory containing a CMake configuration file for tf.
 tf_DIR:PATH=/opt/ros/noetic/share/tf/cmake
 
+//The directory containing a CMake configuration file for turtlesim.
+turtlesim_DIR:PATH=/opt/ros/noetic/share/turtlesim/cmake
+
 //The directory containing a CMake configuration file for urdf.
 urdf_DIR:PATH=/opt/ros/noetic/share/urdf/cmake
 
@@ -1276,11 +1279,50 @@ vino_sample_BINARY_DIR:STATIC=/home/hyobeen/catkin_ws/build/ros_openvino_toolkit
 //Value Computed by CMake
 vino_sample_SOURCE_DIR:STATIC=/home/hyobeen/catkin_ws/src/ros_openvino_toolkit/vino_sample
 
+//Value Computed by CMake
+w1_1_sensor_test_BINARY_DIR:STATIC=/home/hyobeen/catkin_ws/build/w1_1_sensor_test
+
+//Value Computed by CMake
+w1_1_sensor_test_SOURCE_DIR:STATIC=/home/hyobeen/catkin_ws/src/w1_1_sensor_test
+
+//Value Computed by CMake
+w1_3_launch_mobile_robot_BINARY_DIR:STATIC=/home/hyobeen/catkin_ws/build/w1_3_launch_mobile_robot
+
+//Value Computed by CMake
+w1_3_launch_mobile_robot_SOURCE_DIR:STATIC=/home/hyobeen/catkin_ws/src/w1_3_launch_mobile_robot
+
+//Value Computed by CMake
+w3_description_BINARY_DIR:STATIC=/home/hyobeen/catkin_ws/build/w3_navigation/w3_description
+
+//Value Computed by CMake
+w3_description_SOURCE_DIR:STATIC=/home/hyobeen/catkin_ws/src/w3_navigation/w3_description
+
+//Value Computed by CMake
+w3_navigation_BINARY_DIR:STATIC=/home/hyobeen/catkin_ws/build/w3_navigation/w3_navigation
+
+//Value Computed by CMake
+w3_navigation_SOURCE_DIR:STATIC=/home/hyobeen/catkin_ws/src/w3_navigation/w3_navigation
+
 //The directory containing a CMake configuration file for xacro.
 xacro_DIR:PATH=/opt/ros/noetic/share/xacro/cmake
 
 //The directory containing a CMake configuration file for xmlrpcpp.
 xmlrpcpp_DIR:PATH=/opt/ros/noetic/share/xmlrpcpp/cmake
+
+//Value Computed by CMake
+ydlidar_ros_BINARY_DIR:STATIC=/home/hyobeen/catkin_ws/build/ydlidar_ros
+
+//Value Computed by CMake
+ydlidar_ros_SOURCE_DIR:STATIC=/home/hyobeen/catkin_ws/src/ydlidar_ros
+
+//Value Computed by CMake
+ydlidar_ros_driver_BINARY_DIR:STATIC=/home/hyobeen/catkin_ws/build/ydlidar_ros_driver
+
+//Value Computed by CMake
+ydlidar_ros_driver_SOURCE_DIR:STATIC=/home/hyobeen/catkin_ws/src/ydlidar_ros_driver
+
+//The directory containing a CMake configuration file for ydlidar_sdk.
+ydlidar_sdk_DIR:PATH=/usr/local/lib/cmake/ydlidar_sdk
 
 //Value Computed by CMake
 yocs_cmd_vel_mux_BINARY_DIR:STATIC=/home/hyobeen/catkin_ws/build/yujin_ocs/yocs_cmd_vel_mux
@@ -1475,7 +1517,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=42
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=48
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -1797,6 +1839,18 @@ X11_dpms_INCLUDE_PATH-ADVANCED:INTERNAL=1
 X11_xkbfile_INCLUDE_PATH-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: X11_xkbfile_LIB
 X11_xkbfile_LIB-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: YDLIDAR_SDK_INCLUDE_DIRS
+YDLIDAR_SDK_INCLUDE_DIRS-ADVANCED:INTERNAL=1
+//YDLIDAR_SDK include directories
+YDLIDAR_SDK_INCLUDE_DIRS:INTERNAL=/usr/local/include/src;/usr/local/include
+//ADVANCED property for variable: YDLIDAR_SDK_LIBRARIES
+YDLIDAR_SDK_LIBRARIES-ADVANCED:INTERNAL=1
+//YDLIDAR_SDK libraries
+YDLIDAR_SDK_LIBRARIES:INTERNAL=ydlidar_sdk;pthread;rt
+//ADVANCED property for variable: YDLIDAR_SDK_LIBRARY_DIRS
+YDLIDAR_SDK_LIBRARY_DIRS-ADVANCED:INTERNAL=1
+//YDLIDAR_SDK library directories
+YDLIDAR_SDK_LIBRARY_DIRS:INTERNAL=
 //CMAKE_INSTALL_PREFIX during last run
 _GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=/home/hyobeen/catkin_ws/install
 __pkg_config_arguments_PKG_FONTCONFIG:INTERNAL=QUIET;fontconfig

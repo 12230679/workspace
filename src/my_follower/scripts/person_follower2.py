@@ -28,7 +28,7 @@ class SmartNavFollower:
     def callback(self, msg):
         target_person = None
 
-        # ID 1번 찾기
+        # ID 0번 찾기
         for obj in msg.objects_vector:
             if self.target_id in obj.object.object_name:
                 target_person = obj
@@ -38,6 +38,7 @@ class SmartNavFollower:
             # 목표물 위치 갱신은 2초에 한 번씩만! (경로 계산할 시간을 줘야 로봇이 버벅대지 않음)
             current_time = rospy.Time.now()
             if (current_time - self.last_goal_time).to_sec() < 2.0:
+                rospy.loginfo("목표 갱신 대기 중...")
                 return
 
             self.last_goal_time = current_time
