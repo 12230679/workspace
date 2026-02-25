@@ -8,91 +8,89 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from object_msgs.msg import ObjectsInBoxes
 from tf.transformations import quaternion_from_euler
 
-class SmartNavFollower:
+class SimplePersonFollower:
     def __init__(self):
-        rospy.init_node('smart_nav_follower_node')
+        rospy.init_node('simple_person_follower_node')
         
-        # 1. move_base(네비게이션 두뇌)에 목표를 하달할 클라이언트 생성
         self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
-        rospy.loginfo("네비게이션 두뇌(move_base)가 켜질 때까지 기다립니다...")
+        rospy.loginfo("네비게이션 두뇌(move_base) 대기 중...")
         self.client.wait_for_server()
-        rospy.loginfo("move_base 연결 완료! 지휘 준비 끝.")
+        rospy.loginfo("move_base 연결 완료! 이제 사람이 보이면 무조건 따라갑니다.")
 
-        # 2. OpenVINO 사람 인식 데이터 구독
+        # 카메라 데이터를 받는 구독자 (토픽 이름은 기존과 동일)
         self.sub = rospy.Subscriber('/ros_openvino_toolkit/reidentified_persons', ObjectsInBoxes, self.callback)
         
-        self.target_id = "1"
         self.image_width = 640
         self.last_goal_time = rospy.Time.now()
 
     def callback(self, msg):
+        # 1. 사람이 아무도 안 보이면 무시
+        if not msg.objects_vector:
+            return
+
+        # 2. 사람이 여러 명일 수 있으니, 화면에서 가장 '박스가 큰(=가장 가까운)' 사람을 고릅니다.
         target_person = None
+        max_area = 0
 
-        # ID 0번 찾기
         for obj in msg.objects_vector:
-            if self.target_id in obj.object.object_name:
+            area = obj.roi.width * obj.roi.height
+            if area > max_area:
+                max_area = area
                 target_person = obj
-                break
 
-        if target_person is not None:
-            # 목표물 위치 갱신은 2초에 한 번씩만! (경로 계산할 시간을 줘야 로봇이 버벅대지 않음)
-            current_time = rospy.Time.now()
-            if (current_time - self.last_goal_time).to_sec() < 2.0:
-                rospy.loginfo("목표 갱신 대기 중...")
-                return
+        if target_person is None:
+            return
 
-            self.last_goal_time = current_time
+        # 3. 목표 갱신 주기 (로봇이 너무 버벅거리지 않게 1초에 한 번만 명령을 내림)
+        current_time = rospy.Time.now()
+        if (current_time - self.last_goal_time).to_sec() < 1.0:
+            return
 
-            roi = target_person.roi
-            x_center = roi.x_offset + (roi.width / 2)
-            area = roi.width * roi.height
+        self.last_goal_time = current_time
 
-            # [핵심] 리얼센스 뎁스(거리)나 박스 크기를 이용해 좌표(x, y) 계산
-            # (여기서는 박스 면적을 거리로 환산하는 방식을 사용. 완벽한 뎁스 연결 전 임시 계산법)
-            # 면적이 작을수록(멀수록) 목표점을 앞으로 길게 잡음
-            if area < 40000:
-                target_distance = 1.5  # 사람이 멀면 1.5m 앞을 목표로
-            elif area < 80000:
-                target_distance = 1.0  # 적당하면 1.0m 앞을 목표로
-            else:
-                rospy.loginfo("ID %s와 충분히 가깝습니다. 대기.", self.target_id)
-                return # 너무 가까우면 새 목표를 주지 않고 정지
+        # 4. 선택된 사람의 위치와 크기 계산
+        roi = target_person.roi
+        x_center = roi.x_offset + (roi.width / 2)
+        area = roi.width * roi.height  # 이 면적(Area) 값이 거리 조절의 핵심!
 
-            # 중심에서 벗어난 정도를 각도(라디안)로 변환
-            error_x = (self.image_width / 2) - x_center
-            target_angle = error_x * 0.0025
+        # --- 거리 계산 (면적 기준) ---
+        # 박스 크기가 작으면 멀리 있다는 뜻이므로 앞으로 가고, 
+        # 박스 크기가 너무 크면 코앞에 있다는 뜻이므로 멈춥니다.
+        if area < 40000:
+            target_distance = 1.0  # 멀리 있음 -> 1.0m 앞으로 가라
+        elif area < 100000:
+            target_distance = 0.5  # 중간 거리 -> 0.5m 앞으로 가라
+        else:
+            rospy.loginfo("✋ 사람이 충분히 가깝습니다! (크기: %d) 정지 대기.", area)
+            return
 
-            # 삼각함수로 로봇 기준(base_link) x(앞뒤), y(좌우) 좌표 계산
-            # 안전거리 유지를 위해 계산된 거리에서 0.5m를 뺀 곳을 목표로 잡습니다.
-            safe_distance = target_distance - 0.5 
-            goal_x = safe_distance * math.cos(target_angle)
-            goal_y = safe_distance * math.sin(target_angle)
+        # --- 각도 계산 ---
+        error_x = (self.image_width / 2) - x_center
+        target_angle = error_x * 0.0025 # 사람을 화면 중앙에 맞추기 위한 회전각
 
-            # 3. 목표점(Goal) 생성 및 전송
-            goal = MoveBaseGoal()
-            # 로봇 자신의 현재 위치(base_link)를 기준으로 목표를 설정! (아주 중요)
-            goal.target_pose.header.frame_id = "base_link"
-            goal.target_pose.header.stamp = rospy.Time.now()
+        goal_x = target_distance * math.cos(target_angle)
+        goal_y = target_distance * math.sin(target_angle)
 
-            # x, y 좌표 입력
-            goal.target_pose.pose.position.x = goal_x
-            goal.target_pose.pose.position.y = goal_y
+        # 5. 운전기사(move_base)에게 목적지 전송
+        goal = MoveBaseGoal()
+        goal.target_pose.header.frame_id = "base_link" # 로봇 중심 기준
+        goal.target_pose.header.stamp = rospy.Time.now()
 
-            # 로봇이 목표점에 도착했을 때 바라볼 방향(사람이 있는 각도)
-            q = quaternion_from_euler(0, 0, target_angle)
-            goal.target_pose.pose.orientation.x = q[0]
-            goal.target_pose.pose.orientation.y = q[1]
-            goal.target_pose.pose.orientation.z = q[2]
-            goal.target_pose.pose.orientation.w = q[3]
+        goal.target_pose.pose.position.x = goal_x
+        goal.target_pose.pose.position.y = goal_y
 
-            rospy.loginfo("새로운 목표점 하달! 앞쪽 %.2fm, 좌우 %.2fm 이동 후 대기", goal_x, goal_y)
-            
-            # 네비게이션으로 쏴주기!
-            self.client.send_goal(goal)
+        q = quaternion_from_euler(0, 0, target_angle)
+        goal.target_pose.pose.orientation.x = q[0]
+        goal.target_pose.pose.orientation.y = q[1]
+        goal.target_pose.pose.orientation.z = q[2]
+        goal.target_pose.pose.orientation.w = q[3]
+
+        rospy.loginfo("🚀 추종 명령 하달! [박스 크기:%d] 앞쪽:%.2fm, 측면:%.2fm 이동", area, goal_x, goal_y)
+        self.client.send_goal(goal)
 
 if __name__ == '__main__':
     try:
-        SmartNavFollower()
+        SimplePersonFollower()
         rospy.spin()
     except rospy.ROSInterruptException:
         pass
