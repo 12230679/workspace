@@ -36,7 +36,9 @@ for gt_f_name in gt_files:
             clean_line = line.strip()
             if not clean_line: continue  # 빈 줄 건너뛰기
             parts = clean_line.split()
-            if len(parts) >= 5: 
+            # PennFudanPed GT 파일은 좌표 4개(x1 y1 x2 y2)만 포함
+            # 여기에 적어도 4개의 값이 들어 있으면 하나의 박스로 취급
+            if len(parts) >= 4:
                 total_gts += 1
     
     # 2. Pred 로드: 파일명 매칭 및 데이터 검증
@@ -76,8 +78,10 @@ for i, pred in enumerate(all_preds):
             clean_line = line.strip()
             if not clean_line: continue
             parts = clean_line.split()
-            if len(parts) >= 5:
-                current_gts.append(list(map(float, parts[1:])))
+            # GT format may have only 4 numbers; take last four values as box
+            if len(parts) >= 4:
+                vals = list(map(float, parts[-4:]))
+                current_gts.append(vals)
     
     if not gt_matched[pred['file']]:
         gt_matched[pred['file']] = [False] * len(current_gts)
